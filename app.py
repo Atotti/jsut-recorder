@@ -31,7 +31,7 @@ def save_audio(index, audio_data):
 
     # audio_dataをアンパック
     if isinstance(audio_data, tuple):
-        audio_data, sampling_rate = audio_data
+        sampling_rate, audio_data = audio_data
 
     if sampling_rate != SAMPLE_RATE:
         Warning(f"サンプリングレートが{sampling_rate}Hzです。{SAMPLE_RATE}Hzに変換します。")
