@@ -33,10 +33,8 @@ def save_audio(index, audio_data):
     if isinstance(audio_data, tuple):
         audio_data, sampling_rate = audio_data
 
-    # サンプリングレートを検証
     if sampling_rate != SAMPLE_RATE:
-        Warning(f"サンプリングレートが{SAMPLE_RATE} Hz ではなく{sampling_rate} Hz です。")
-
+        Warning(f"サンプリングレートが{sampling_rate}Hzです。{SAMPLE_RATE}Hzに変換します。")
 
     # ステレオ音声をモノラルに変換（2次元配列を1次元に）
     if audio_data.ndim == 2:  # ステレオの場合
@@ -51,37 +49,33 @@ def save_audio(index, audio_data):
     next_index = index + 1
     next_text = texts[next_index] if next_index < len(texts) else "すべてのテキストを読み上げました。"
 
-    return next_index, next_text, filepath
+    return next_index, f"# {next_index}: {next_text}", filepath
 
 with gr.Blocks() as demo:
-    # UIのステート
-    index_state = gr.State(0)
     # UIコンポーネント
-    current_textbox = gr.Markdown("現在の読み上げテキスト", elem_id="current_textbox")
-    audio_input = gr.Audio(sources="microphone", type="numpy", label="録音データ")
+    current_text = gr.Markdown("# 現在の読み上げテキスト", elem_id="current_text")
+    # https://www.gradio.app/docs/gradio/audio
+    audio_input = gr.Audio(
+        sources=["microphone"],
+        type="numpy",
+        label="録音データ",
+        show_download_button=True,
+        )
     save_button = gr.Button("録音を保存して次へ")
-
-    # CSSでテキストを大きく表示
-    demo.css = """
-    #current_textbox {
-        font-size: 24px;
-        font-weight: bold;
-        text-align: center;
-    }
-    """
+    index_state = gr.State(0)
 
     # 録音保存ボタンの処理
     save_button.click(
         save_audio,
         inputs=[index_state, audio_input],
-        outputs=[index_state, current_textbox]
+        outputs=[index_state, current_text]
     )
 
     # 初期状態の更新
     demo.load(
-        lambda index: (index, texts[index] if index < len(texts) else "すべてのテキストを読み上げました。", None),
+        lambda index: (index, f"# {index+1}: {texts[index]}" if index < len(texts) else "すべてのテキストを読み上げました。", None),
         inputs=index_state,
-        outputs=[index_state, current_textbox]
+        outputs=[index_state, current_text]
     )
 
 demo.launch()
