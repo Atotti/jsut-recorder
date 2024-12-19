@@ -11,9 +11,24 @@ import io
 SAMPLE_RATE = 44100
 OUTPUT_DIR = "output_dataset"
 METADATA_FILE = os.path.join(OUTPUT_DIR, "metadata.csv")
+TRANSCRIPTS = "voiceactress100.csv"
 
 # ディレクトリ作成
 os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+
+# CSVからテキストを読み取る
+def load_texts_from_csv(csv_file):
+    texts = []
+    with open(csv_file, newline='', encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            texts.append(row["text"])
+    return texts
+
+
+# 読み上げるテキストをロード
+texts = load_texts_from_csv(TRANSCRIPTS)
 
 # 無音検出と音声分割
 def split_audio(audio_path, threshold=-40, min_silence_duration=0.3):
@@ -61,7 +76,6 @@ def preview_audio(filename):
     return None
 
 with gr.Blocks() as demo:
-    text_input = gr.Textbox(label="読み上げるテキスト（改行区切り）", lines=5)
     record_time_slider = gr.Slider(minimum=1, maximum=10, value=5, step=1, label="録音時間（秒）")
     record_button = gr.Button("録音開始")
     recorded_audio_output = gr.Audio(label="録音データ", type="numpy")
@@ -69,12 +83,25 @@ with gr.Blocks() as demo:
     metadata_output = gr.DataFrame(headers=["file_name", "text"], label="生成されたデータセット")
     preview_dropdown = gr.Dropdown(label="プレビューする音声ファイル", allow_custom_value=False)
     preview_audio_output = gr.Audio(label="音声プレビュー")
+    current_textbox = gr.Textbox(label="現在の読み上げテキスト", interactive=False)
 
-    record_button.click(record_audio, inputs=record_time_slider, outputs=recorded_audio_output)
+    # テキストのインデックスを管理
+    index_state = gr.State(0)
+
+    def update_current_text(index):
+        if index < len(texts):
+            return texts[index]
+        return "すべてのテキストを読み上げました。"
+
+    record_button.click(
+        record_audio,
+        inputs=record_time_slider,
+        outputs=recorded_audio_output
+    )
 
     dataset_button.click(
         create_dataset,
-        inputs=[text_input, recorded_audio_output],
+        inputs=recorded_audio_output,
         outputs=metadata_output
     )
     dataset_button.click(
@@ -83,5 +110,14 @@ with gr.Blocks() as demo:
     )
 
     preview_dropdown.change(preview_audio, inputs=preview_dropdown, outputs=preview_audio_output)
+
+    # 読み上げテキスト更新
+    record_button.click(
+        lambda index: (index + 1, update_current_text(index + 1)),
+        inputs=index_state,
+        outputs=[index_state, current_textbox]
+    )
+
+    current_textbox.value = update_current_text(0)
 
 demo.launch()
