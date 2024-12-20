@@ -121,7 +121,7 @@ with gr.Blocks() as demo:
         visible=False,
         )
     save_button = gr.Button("録音を保存して次へ", variant="primary", visible=False,)
-    spectrogram_toggle_button = gr.Button("スペクトログラム表示 [OFF]", variant="secondary", visible=False)
+    spectrogram_toggle_button = gr.Button("スペクトログラム表示 [ON]", variant="secondary", visible=False)
     spectrogram_output = gr.Image(label="スペクトログラム", type="numpy", visible=False)
 
     index_state = gr.State(0)
