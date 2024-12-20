@@ -49,7 +49,7 @@ def get_start_index(output_dir):
 texts = load_texts_from_csv(TRANSCRIPTS)
 
 
-def save_audio(index, audio_data):
+def save_audio(index, audio_data, spectrogram_visibility):
     if index >= len(texts):
         return index, "すべてのテキストを読み上げました。", None
 
@@ -73,12 +73,18 @@ def save_audio(index, audio_data):
     next_index = index + 1
     next_text = texts[next_index] if next_index < len(texts) else "すべてのテキストを読み上げました。"
 
-    spectrogram_output = show_spectrogram(audio_data)
+    spectrogram_output = show_spectrogram(audio_data) if spectrogram_visibility else None
 
     return next_index, f"<h1>{next_index+1}: {next_text}</h1>", None, spectrogram_output
 
 
 start_index = get_start_index(OUTPUT_DIR)
+
+
+def toggle_spectrogram_visibility(state):
+    state = not state
+    return state, ("スペクトログラム表示 [ON]" if state else "スペクトログラム表示 [OFF]"), gr.update(visible=state)
+
 
 with gr.Blocks() as demo:
     # UIコンポーネント
@@ -92,13 +98,21 @@ with gr.Blocks() as demo:
         waveform_options=gr.WaveformOptions(sample_rate=SAMPLE_RATE)
         )
     save_button = gr.Button("録音を保存して次へ", variant="primary")
-    spectrogram_output = gr.Image(label="スペクトログラム", type="numpy")
+    spectrogram_toggle_button = gr.Button("スペクトログラム表示 [OFF]", variant="secondary")
+    spectrogram_output = gr.Image(label="スペクトログラム", type="numpy", visible=False)
     index_state = gr.State(start_index)
+
+    spectrogram_visibility = gr.State(False)
+    spectrogram_toggle_button.click(
+        toggle_spectrogram_visibility,
+        inputs=spectrogram_visibility,
+        outputs=[spectrogram_visibility, spectrogram_toggle_button, spectrogram_output]
+    )
 
     # 録音保存ボタンの処理
     save_button.click(
         save_audio,
-        inputs=[index_state, audio_input],
+        inputs=[index_state, audio_input, spectrogram_visibility],
         outputs=[index_state, current_text, audio_input, spectrogram_output]
     )
 
