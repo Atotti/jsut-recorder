@@ -1,5 +1,6 @@
 import gradio as gr
 import os
+import re
 import csv
 import soundfile as sf
 import numpy as np
@@ -21,6 +22,27 @@ def load_texts_from_csv(csv_file):
             texts.append(row["text"])
     return texts
 
+# 既存のファイル名から次のインデックスを取得
+def get_start_index(output_dir):
+    pattern = r"VOICEACTRESS100_([0-9]{4})\.wav"
+
+    # パターンにマッチするファイルを抽出
+    existing_files = [
+        file_name for file_name in os.listdir(output_dir) if bool(re.search(pattern, file_name))
+    ]
+
+    # マッチするファイルがない場合、0を返す
+    if not existing_files:
+        return 0
+
+    # マッチするファイルのインデックス部分を取得し、最大値を計算
+    return max(
+        [
+            int(re.search(pattern, file_name).group(1)) for file_name in existing_files
+        ]
+    ) # ファイル名はindex+1であるため、最大値をそのまま返す
+
+
 # 読み上げるテキストをロード
 texts = load_texts_from_csv(TRANSCRIPTS)
 
@@ -41,7 +63,7 @@ def save_audio(index, audio_data):
         audio_data = np.mean(audio_data, axis=1)
 
     # 録音データを保存
-    filename = f"{index + 1:04d}.wav"
+    filename = f"VOICEACTRESS100_{index + 1:04d}.wav"
     filepath = os.path.join(OUTPUT_DIR, filename)
     sf.write(filepath, audio_data, SAMPLE_RATE)
 
@@ -49,7 +71,9 @@ def save_audio(index, audio_data):
     next_index = index + 1
     next_text = texts[next_index] if next_index < len(texts) else "すべてのテキストを読み上げました。"
 
-    return next_index, f"# {next_index}: {next_text}", None
+    return next_index, f"# {next_index+1}: {next_text}", None
+
+start_index = get_start_index(OUTPUT_DIR)
 
 with gr.Blocks() as demo:
     # UIコンポーネント
@@ -63,7 +87,7 @@ with gr.Blocks() as demo:
         waveform_options=gr.WaveformOptions(sample_rate=SAMPLE_RATE)
         )
     save_button = gr.Button("録音を保存して次へ", variant="primary")
-    index_state = gr.State(0)
+    index_state = gr.State(start_index)
 
     # 録音保存ボタンの処理
     save_button.click(
