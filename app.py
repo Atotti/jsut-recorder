@@ -85,7 +85,7 @@ def save_audio(index, audio_data, spectrogram_visibility, user_name):
     next_index = index + 1
     next_text = texts[next_index] if next_index < len(texts) else "すべてのテキストを読み上げました。"
 
-    spectrogram_output = show_spectrogram(audio_data) if spectrogram_visibility else None
+    spectrogram_output = show_spectrogram(audio_data, user_name) if spectrogram_visibility else None
 
     return next_index, f"<h1>{next_index+1}: {next_text}</h1>", None, spectrogram_output, user_name
 
