@@ -8,7 +8,7 @@ import numpy as np
 # 設定
 SAMPLE_RATE = 44100
 OUTPUT_DIR = "output_dataset"
-TRANSCRIPTS = "voiceactress100.csv"
+TRANSCRIPTS = "voiceactress100_with_ruby.csv"
 
 # ディレクトリ作成
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -19,7 +19,7 @@ def load_texts_from_csv(csv_file):
     with open(csv_file, newline='', encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            texts.append(row["text"])
+            texts.append(row["ruby_text"]) # ルビ付きテキストを読み込む
     return texts
 
 # 既存のファイル名から次のインデックスを取得
@@ -71,13 +71,15 @@ def save_audio(index, audio_data):
     next_index = index + 1
     next_text = texts[next_index] if next_index < len(texts) else "すべてのテキストを読み上げました。"
 
-    return next_index, f"# {next_index+1}: {next_text}", None
+
+    return next_index, f"<h1>{next_index}: {next_text}</h1>", None
+
 
 start_index = get_start_index(OUTPUT_DIR)
 
 with gr.Blocks() as demo:
     # UIコンポーネント
-    current_text = gr.Markdown("# 現在の読み上げテキスト", elem_id="current_text")
+    current_text = gr.Markdown("<h1>現在の読み上げテキスト</h1>", elem_id="current_text")
     # https://www.gradio.app/docs/gradio/audio
     audio_input = gr.Audio(
         sources=["microphone"],
@@ -98,9 +100,17 @@ with gr.Blocks() as demo:
 
     # 初期状態の更新
     demo.load(
-        lambda index: (index, f"# {index+1}: {texts[index]}" if index < len(texts) else "すべてのテキストを読み上げました。", None),
+        lambda index: (index, f"<h1>{index+1}: {texts[index]}</h1>" if index < len(texts) else "すべてのテキストを読み上げました。", None),
         inputs=index_state,
         outputs=[index_state, current_text, audio_input]
     )
+
+    demo.css = """
+    #ruby-text ruby rt {
+        font-size: 0.8em;
+        color: gray;
+    }
+    """
+
 
 demo.launch()
