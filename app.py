@@ -92,7 +92,7 @@ def save_audio(index, audio_data, spectrogram_visibility, user_name):
 
 def toggle_spectrogram_visibility(state):
     state = not state
-    return state, ("スペクトログラム表示 [ON]" if state else "スペクトログラム表示 [OFF]"), gr.update(visible=state)
+    return state, ("スペクトログラムを非表示にする" if state else "スペクトログラムを表示する"), gr.update(visible=state)
 
 
 # ログイン処理
@@ -121,7 +121,7 @@ with gr.Blocks() as demo:
         visible=False,
         )
     save_button = gr.Button("録音を保存して次へ", variant="primary", visible=False,)
-    spectrogram_toggle_button = gr.Button("スペクトログラム表示 [ON]", variant="secondary", visible=False)
+    spectrogram_toggle_button = gr.Button("スペクトログラムを非表示にする", variant="secondary", visible=False)
     spectrogram_output = gr.Image(label="スペクトログラム", type="numpy", visible=False)
 
     index_state = gr.State(0)
