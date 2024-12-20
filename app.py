@@ -51,7 +51,11 @@ texts = load_texts_from_csv(TRANSCRIPTS)
 
 def save_audio(index, audio_data, spectrogram_visibility):
     if index >= len(texts):
-        return index, "すべてのテキストを読み上げました。", None
+        return index, "すべてのテキストを読み上げました。", None, None
+
+    if audio_data is None:
+        gr.Warning("先に録音を完了してください。")
+        return index, f"<h1>{index+1}: {texts[index]}</h1>", None, None
 
     # audio_dataをアンパック
     if isinstance(audio_data, tuple):
@@ -100,7 +104,6 @@ with gr.Blocks() as demo:
     save_button = gr.Button("録音を保存して次へ", variant="primary")
     spectrogram_toggle_button = gr.Button("スペクトログラム表示 [OFF]", variant="secondary")
     spectrogram_output = gr.Image(label="スペクトログラム", type="numpy", visible=False)
-    index_state = gr.State(start_index)
 
     spectrogram_visibility = gr.State(False)
     spectrogram_toggle_button.click(
@@ -109,6 +112,7 @@ with gr.Blocks() as demo:
         outputs=[spectrogram_visibility, spectrogram_toggle_button, spectrogram_output]
     )
 
+    index_state = gr.State(start_index)
     # 録音保存ボタンの処理
     save_button.click(
         save_audio,
