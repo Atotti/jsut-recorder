@@ -99,35 +99,51 @@ def toggle_spectrogram_visibility(state):
 def login(user_name):
     user_dir = os.path.join(OUTPUT_DIR, user_name)
     start_index = get_start_index(user_dir)
-    return user_name, start_index, f"<h1>{start_index+1}: {texts[start_index]}</h1>", gr.update(visible=True)
+    return user_name, gr.update(visible=False), gr.update(visible=False), gr.update(visible=True), f"現在のユーザー：{user_name}", \
+        f"<h1>{start_index+1}: {texts[start_index]}</h1>", gr.update(visible=True), gr.update(visible=True), \
+        gr.update(visible=True), gr.update(visible=True)
 
 with gr.Blocks() as demo:
     # UIコンポーネント
 
-    login_name = gr.Textbox(label="名前を入力してログイン")
-    login_button = gr.Button("ログイン")
+    login_name = gr.Textbox(label="名前を入力してログイン", visible=True)
+    login_button = gr.Button("ログイン", visible=True)
+    user_name_display = gr.Markdown("", visible=False)
 
-    current_text = gr.Markdown("<h1>現在の読み上げテキスト</h1>", elem_id="current_text")
+    current_text = gr.Markdown("<h1>現在の読み上げテキスト</h1>", elem_id="current_text", visible=False)
     # https://www.gradio.app/docs/gradio/audio
     audio_input = gr.Audio(
         sources=["microphone"],
         type="numpy",
         label="録音データ",
         show_download_button=True,
-        waveform_options=gr.WaveformOptions(sample_rate=SAMPLE_RATE)
+        waveform_options=gr.WaveformOptions(sample_rate=SAMPLE_RATE),
+        visible=False,
         )
-    save_button = gr.Button("録音を保存して次へ", variant="primary")
-    spectrogram_toggle_button = gr.Button("スペクトログラム表示 [OFF]", variant="secondary")
+    save_button = gr.Button("録音を保存して次へ", variant="primary", visible=False,)
+    spectrogram_toggle_button = gr.Button("スペクトログラム表示 [OFF]", variant="secondary", visible=False)
     spectrogram_output = gr.Image(label="スペクトログラム", type="numpy", visible=False)
 
     index_state = gr.State(0)
     spectrogram_visibility = gr.State(False)
     user_name = gr.State("")
 
+     # ログイン処理
     login_button.click(
         login,
         inputs=login_name,
-        outputs=[user_name, index_state, current_text, audio_input],
+        outputs=[
+            user_name,  # ユーザー名更新
+            login_name,  # ログイン後非表示
+            login_button,  # ログイン後非表示
+            user_name_display,  # ログイン後表示
+            user_name_display,  # ユーザー名表示更新
+            current_text,  # 現在のテキスト表示
+            current_text, # ログイン後表示
+            audio_input,  # 録音UI表示
+            save_button,  # 保存ボタン表示
+            spectrogram_toggle_button,  # スペクトログラム表示ボタン表示
+        ],
     )
 
     spectrogram_toggle_button.click(
