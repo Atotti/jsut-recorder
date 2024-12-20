@@ -75,7 +75,7 @@ def save_audio(index, audio_data):
 
     spectrogram_output = show_spectrogram(audio_data)
 
-    return next_index, f"<h1>{next_index}: {next_text}</h1>", None, spectrogram_output
+    return next_index, f"<h1>{next_index+1}: {next_text}</h1>", None, spectrogram_output
 
 
 start_index = get_start_index(OUTPUT_DIR)
