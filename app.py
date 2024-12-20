@@ -84,6 +84,7 @@ with gr.Blocks() as demo:
         type="numpy",
         label="録音データ",
         show_download_button=True,
+        waveform_options=gr.WaveformOptions(sample_rate=SAMPLE_RATE)
         )
     save_button = gr.Button("録音を保存して次へ", variant="primary")
     index_state = gr.State(start_index)
