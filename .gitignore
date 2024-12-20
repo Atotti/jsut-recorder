@@ -2,3 +2,5 @@
 
 output_dataset
 *.wav
+
+tmp_spectrogram.png
