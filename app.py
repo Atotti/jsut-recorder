@@ -125,7 +125,7 @@ with gr.Blocks() as demo:
     spectrogram_output = gr.Image(label="スペクトログラム", type="numpy", visible=False)
 
     index_state = gr.State(0)
-    spectrogram_visibility = gr.State(False)
+    spectrogram_visibility = gr.State(True)
     user_name = gr.State("")
 
      # ログイン処理
