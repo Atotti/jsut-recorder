@@ -4,6 +4,8 @@ import csv
 import soundfile as sf
 import numpy as np
 
+from src.spectrogram import show_spectrogram
+
 # 設定
 SAMPLE_RATE = 44100
 OUTPUT_DIR = "output_dataset"
@@ -24,7 +26,7 @@ def load_texts_from_csv(csv_file):
 # 読み上げるテキストをロード
 texts = load_texts_from_csv(TRANSCRIPTS)
 
-# 録音データを保存し、次のテキストに進む
+
 def save_audio(index, audio_data):
     if index >= len(texts):
         return index, "すべてのテキストを読み上げました。", None
@@ -49,7 +51,9 @@ def save_audio(index, audio_data):
     next_index = index + 1
     next_text = texts[next_index] if next_index < len(texts) else "すべてのテキストを読み上げました。"
 
-    return next_index, f"# {next_index}: {next_text}", None
+    spectrogram_output = show_spectrogram(audio_data)
+
+    return next_index, f"# {next_index}: {next_text}", None, spectrogram_output
 
 with gr.Blocks() as demo:
     # UIコンポーネント
@@ -63,20 +67,21 @@ with gr.Blocks() as demo:
         waveform_options=gr.WaveformOptions(sample_rate=SAMPLE_RATE)
         )
     save_button = gr.Button("録音を保存して次へ", variant="primary")
+    spectrogram_output = gr.Image(label="スペクトログラム", type="numpy")
     index_state = gr.State(0)
 
     # 録音保存ボタンの処理
     save_button.click(
         save_audio,
         inputs=[index_state, audio_input],
-        outputs=[index_state, current_text, audio_input]
+        outputs=[index_state, current_text, audio_input, spectrogram_output]
     )
 
     # 初期状態の更新
     demo.load(
-        lambda index: (index, f"# {index+1}: {texts[index]}" if index < len(texts) else "すべてのテキストを読み上げました。", None),
+        lambda index: (index, f"# {index+1}: {texts[index]}" if index < len(texts) else "すべてのテキストを読み上げました。", None, None),
         inputs=index_state,
-        outputs=[index_state, current_text, audio_input]
+        outputs=[index_state, current_text, audio_input, spectrogram_output]
     )
 
 demo.launch()
