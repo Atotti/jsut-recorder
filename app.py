@@ -101,7 +101,7 @@ def login(user_name):
     start_index = get_start_index(user_dir)
     return user_name, gr.update(visible=False), gr.update(visible=False), gr.update(visible=True), f"現在のユーザー：{user_name}", \
         f"<h1>{start_index+1}: {texts[start_index]}</h1>", gr.update(visible=True), gr.update(visible=True), \
-        gr.update(visible=True), gr.update(visible=True)
+        gr.update(visible=True), gr.update(visible=True), gr.update(visible=True)
 
 with gr.Blocks() as demo:
     # UIコンポーネント
@@ -143,6 +143,7 @@ with gr.Blocks() as demo:
             audio_input,  # 録音UI表示
             save_button,  # 保存ボタン表示
             spectrogram_toggle_button,  # スペクトログラム表示ボタン表示
+            spectrogram_output, # スペクトログラム表示
         ],
     )
 
