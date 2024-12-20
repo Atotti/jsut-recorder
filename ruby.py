@@ -1,5 +1,5 @@
 import csv
-
+import re
 import MeCab
 from pykakasi import kakasi
 
@@ -14,6 +14,17 @@ output_csv = "voiceactress100_with_ruby.csv"
 
 def convert(text):
     return "".join([tmp['hira'] for tmp in kks.convert(text)])
+
+def contains_kanji(text: str) -> bool:
+    """Check if the text contains kanji.
+
+    Args:
+        text (str): Text to check.
+
+    Returns:
+        bool: True if the text contains kanji, False otherwise.
+    """
+    return bool(re.search(r'[\u4e00-\u9faf]', text))
 
 # https://github.com/getuka/RubyInserter を参考に拡張を加えた
 def add_ruby(text:str ) -> str:
@@ -39,12 +50,12 @@ def add_ruby(text:str ) -> str:
             parts = line.split('\t')
 
             if parts[1] == "":
-                if convert(parts[3]) == parts[0]:
+                if (convert(parts[3]) == parts[0]) or (not contains_kanji(parts[0])):
                     replaced_text.append(parts[0])
                 else:
                     replaced_text.append(f"<ruby>{parts[0]}<rt>{convert(parts[3])}</rt></ruby>")
             else:
-                if (convert(parts[2]) == parts[0]) or (convert(parts[1]) == parts[0]):
+                if ((convert(parts[2]) == parts[0]) or (convert(parts[1]) == parts[0])) or (not contains_kanji(parts[0])):
                     replaced_text.append(parts[0])
                 else:
                     replaced_text.append(f"<ruby>{parts[0]}<rt>{convert(parts[1])}</rt></ruby>")
