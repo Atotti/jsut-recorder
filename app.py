@@ -62,7 +62,7 @@ def save_audio(index, audio_data, spectrogram_visibility):
         sampling_rate, audio_data = audio_data
 
     if sampling_rate != SAMPLE_RATE:
-        Warning(f"サンプリングレートが{sampling_rate}Hzです。{SAMPLE_RATE}Hzに変換します。")
+        gr,Warning(f"サンプリングレートが{sampling_rate}Hzです。{SAMPLE_RATE}Hzに変換します。")
 
     # ステレオ音声をモノラルに変換（2次元配列を1次元に）
     if audio_data.ndim == 2:  # ステレオの場合
