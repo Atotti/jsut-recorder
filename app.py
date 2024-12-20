@@ -25,12 +25,15 @@ def load_texts_from_csv(csv_file):
     return texts
 
 # 既存のファイル名から次のインデックスを取得
-def get_start_index(output_dir):
+def get_start_index(user_dir):
     pattern = r"VOICEACTRESS100_([0-9]{4})\.wav"
+
+    os.makedirs(user_dir, exist_ok=True)
+
 
     # パターンにマッチするファイルを抽出
     existing_files = [
-        file_name for file_name in os.listdir(output_dir) if bool(re.search(pattern, file_name))
+        file_name for file_name in os.listdir(user_dir) if bool(re.search(pattern, file_name))
     ]
 
     # マッチするファイルがない場合、0を返す
@@ -49,12 +52,16 @@ def get_start_index(output_dir):
 texts = load_texts_from_csv(TRANSCRIPTS)
 
 
-def save_audio(index, audio_data, spectrogram_visibility):
+def save_audio(index, audio_data, spectrogram_visibility, user_name):
     if index >= len(texts):
         return index, "すべてのテキストを読み上げました。", None, None
 
     if audio_data is None:
         gr.Warning("先に録音を完了してください。")
+        return index, f"<h1>{index+1}: {texts[index]}</h1>", None, None
+
+    if user_name == "":
+        gr.Warning("ログインしてください。")
         return index, f"<h1>{index+1}: {texts[index]}</h1>", None, None
 
     # audio_dataをアンパック
@@ -69,8 +76,9 @@ def save_audio(index, audio_data, spectrogram_visibility):
         audio_data = np.mean(audio_data, axis=1)
 
     # 録音データを保存
+    user_dir = os.path.join(OUTPUT_DIR, user_name)
     filename = f"VOICEACTRESS100_{index + 1:04d}.wav"
-    filepath = os.path.join(OUTPUT_DIR, filename)
+    filepath = os.path.join(user_dir, filename)
     sf.write(filepath, audio_data, SAMPLE_RATE)
 
     # 次のテキストを準備
@@ -79,10 +87,7 @@ def save_audio(index, audio_data, spectrogram_visibility):
 
     spectrogram_output = show_spectrogram(audio_data) if spectrogram_visibility else None
 
-    return next_index, f"<h1>{next_index+1}: {next_text}</h1>", None, spectrogram_output
-
-
-start_index = get_start_index(OUTPUT_DIR)
+    return next_index, f"<h1>{next_index+1}: {next_text}</h1>", None, spectrogram_output, user_name
 
 
 def toggle_spectrogram_visibility(state):
@@ -90,8 +95,18 @@ def toggle_spectrogram_visibility(state):
     return state, ("スペクトログラム表示 [ON]" if state else "スペクトログラム表示 [OFF]"), gr.update(visible=state)
 
 
+# ログイン処理
+def login(user_name):
+    user_dir = os.path.join(OUTPUT_DIR, user_name)
+    start_index = get_start_index(user_dir)
+    return user_name, start_index, f"<h1>{start_index+1}: {texts[start_index]}</h1>", gr.update(visible=True)
+
 with gr.Blocks() as demo:
     # UIコンポーネント
+
+    login_name = gr.Textbox(label="名前を入力してログイン")
+    login_button = gr.Button("ログイン")
+
     current_text = gr.Markdown("<h1>現在の読み上げテキスト</h1>", elem_id="current_text")
     # https://www.gradio.app/docs/gradio/audio
     audio_input = gr.Audio(
@@ -105,19 +120,27 @@ with gr.Blocks() as demo:
     spectrogram_toggle_button = gr.Button("スペクトログラム表示 [OFF]", variant="secondary")
     spectrogram_output = gr.Image(label="スペクトログラム", type="numpy", visible=False)
 
+    index_state = gr.State(0)
     spectrogram_visibility = gr.State(False)
+    user_name = gr.State("")
+
+    login_button.click(
+        login,
+        inputs=login_name,
+        outputs=[user_name, index_state, current_text, audio_input],
+    )
+
     spectrogram_toggle_button.click(
         toggle_spectrogram_visibility,
         inputs=spectrogram_visibility,
         outputs=[spectrogram_visibility, spectrogram_toggle_button, spectrogram_output]
     )
 
-    index_state = gr.State(start_index)
     # 録音保存ボタンの処理
     save_button.click(
         save_audio,
-        inputs=[index_state, audio_input, spectrogram_visibility],
-        outputs=[index_state, current_text, audio_input, spectrogram_output]
+        inputs=[index_state, audio_input, spectrogram_visibility, user_name],
+        outputs=[index_state, current_text, audio_input, spectrogram_output, user_name]
     )
 
     # 初期状態の更新
