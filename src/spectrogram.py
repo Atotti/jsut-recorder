@@ -12,9 +12,9 @@ def show_spectrogram(audio: np.ndarray, user_name: str) -> str:
     plt.colorbar(label="Intensity [dB]")
     plt.tight_layout()
 
-    if not os.path.exists(user_name):
-        os.makedirs(user_name)
+    os.makedirs("tmp_img", exist_ok=True)
 
-    plt.savefig(f"{user_name}/tmp_spectrogram.png")
+    plt.savefig(f"tmp_img/{user_name}.png")
+    plt.close()  # メモリ解放
 
-    return f"{user_name}/tmp_spectrogram.png"
+    return f"tmp_img/{user_name}.png"
