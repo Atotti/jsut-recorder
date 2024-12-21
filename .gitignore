@@ -11,4 +11,5 @@ wheels/
 output_dataset
 *.wav
 
-tmp_spectrogram.png
+tmp_img/
+*.png
