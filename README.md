@@ -20,7 +20,7 @@
    1. 「Record」ボタンを押すと同時に発声を始めると、声にクリック音が入ってしまうので、少し開けてから発声を始めて下さい。![image](https://github.com/user-attachments/assets/5a03f278-cd4c-40db-94e5-dc121e748556)
 4. 「Stop」ボタンを押すと、録音が完了します。![image](https://github.com/user-attachments/assets/cfaf5cd1-52dc-47e1-94c2-829d871bbe39)
 5. 前後の不要な部分をトリミングする。
-   1. クリック音と無音区間を厳密でなくてよいので画面の波形を見て、✂マークから適当にトリミングしておいてほしいです。UIで区間を選択して「Trim」を押すと、その部分が削除されます。![image](https://github.com/user-attachments/assets/a66aeed8-2951-4703-b266-9b46763c8aa6)
+   1. クリック音と無音区間を厳密でなくてよいので画面の波形を見て、✂マークから適当にトリミングしておいてほしいです。UIで区間を選択して「Trim」を押すと、その部分にトリミングされます。![image](https://github.com/user-attachments/assets/a66aeed8-2951-4703-b266-9b46763c8aa6)
    2. 選択した後に「trim」を押さないとトリミングされないので注意してください。![image](https://github.com/user-attachments/assets/1b8f0b50-4187-4490-847c-cba3d7a059aa)
 
 6. 問題無ければ「録音を保存して次へ」を押して次の録音に進んでください。
